@@ -1,0 +1,4 @@
+requests==2.2.0
+lxml==3.2.5
+Flask==0.10.1
+Flask-HTTPAuth==2.2.0
