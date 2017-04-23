@@ -31,6 +31,22 @@ def get_categories():
         traceback.print_exc()
 
 
+@app.route('/regions', methods=['GET'])
+# @auth.login_required
+def get_regions():
+    """
+    List of craigslist regions
+
+    :statuscode 200: no error
+    :statuscode 403: invalid creds
+    """
+    try:
+        _regions = service.regions()
+        return jsonify({'regions': _regions})
+    except Exception, e:
+        traceback.print_exc()
+
+
 @app.route('/<region>/cities', methods=['GET'])
 # @auth.login_required
 def get_cities(region):

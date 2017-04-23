@@ -8,12 +8,14 @@ class City(object):
     def __init__(self, name, url):
         self.name = name
         self.url = url
-
+        idx = url.find('.craigslist.org')
+        self.uri = url[8:idx]
 
 class State(object):
     def __init__(self, name, cities):
         self.name = name
         self.cities = cities
+        self.city_names = [c.uri for c in cities]
 
     def json(self):
         return [{'city':c.name, 'url':c.url} for c in self.cities]
@@ -23,6 +25,10 @@ class Region(object):
     def __init__(self, name, states):
         self.name = name
         self.states = states
+        self.city_names = []
+        for state in self.states:
+            for city in state.city_names:
+                self.city_names.append(city)
 
     def json(self):
         return {s.name: s.json() for s in self.states}
@@ -70,7 +76,7 @@ class Item(object):
 
 
 class Category(object):
-    def __init__(self, name, url, items=[]):        
+    def __init__(self, name, url, items=[]):
         self.name = name
         self.url =url
         self.items = items

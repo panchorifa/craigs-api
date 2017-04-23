@@ -28,17 +28,17 @@ def create_find_parser(subparsers):
     parser_find.add_argument(
         '-X', '--categories', type=str, required=True,
         help='Craigslist category (ie. "sof,web" - for software/web jobs - http://city.craigslist.org/category)'
-    )    
+    )
     parser_find.add_argument(
         '-K', '--keywords', type=str, required=True,
         help='Keywords to search for (ie. "java,groovy")'
     )
     parser_find.add_argument(
-        '-C', '--cities', type=str, required=True,
+        '-C', '--cities', type=str, required=False,
         help='Cities to search.'
     )
     parser_find.add_argument(
-        '-T', '--test', type=str, required=True,
+        '-T', '--test', type=str, required=False,
         help='For testing purposes.'
     )
 
@@ -58,8 +58,8 @@ def main():
     if args.command == 'find':
         cats = _list(args.categories)
         keywords = _list(args.keywords)
-        cities = _list(args.cities) if args.cities else CITIES
-        
+        cities = _list(args.cities) if args.cities else None
+
         try:
             _requests = None
             if args.test:

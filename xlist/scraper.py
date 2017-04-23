@@ -4,15 +4,21 @@ from settings import CITY_URL
 from models import Item, City, State, Category
 
 
+_REGION_PATH = '//div[@class="jump_to_continents"]/a/@href'
 _STATE_PATH = '//parent::ul'
-_ITEM_PATH = '//p[@class="row"]'
+# _ITEM_PATH = '//p[@class="row"]'
+_ITEM_PATH = '//p[@class="result-info"]'
 _CATEGORY_PATH = '//div[@class="col"]'
 _CATEGORY_NAME_PATH = 'h4/a'
 _CATEGORY_URL_PATH = 'h4/a/@href'
-_DATE_PATH = 'span[@class="txt"]/span[@class="pl"]/time'
-_TITLE_PATH = 'span[@class="txt"]/span[@class="pl"]/a'
-_URL_PATH = 'span[@class="txt"]/span[@class="pl"]/a/@href'
-_DETAILS_PATH = 'span[@class="txt"]/span[@class="l2"]/span[@class="pnr"]/small'
+_DATE_PATH = 'time[@datetime]'
+_TITLE_PATH = 'a/[@class="result-title hdrlnk"]'
+_URL_PATH = 'a[@class="result-title hdrlnk"]/@href'
+# _DETAILS_PATH = 'span[@class="txt"]/span[@class="l2"]/span[@class="pnr"]/small'
+# _DATE_PATH = 'span[@class="txt"]/span[@class="pl"]/time'
+# _TITLE_PATH = 'span[@class="txt"]/span[@class="pl"]/a'
+# _URL_PATH = 'span[@class="txt"]/span[@class="pl"]/a/@href'
+# _DETAILS_PATH = 'span[@class="txt"]/span[@class="l2"]/span[@class="pnr"]/small'
 
 
 class HtmlScraper(object):
@@ -23,7 +29,10 @@ class HtmlScraper(object):
         """
         self.tree = html.fromstring(text)
         self.item_paths = self.tree.xpath(_ITEM_PATH)
-        print('found: {} paths'.format(len(self.item_paths)))
+        # print('found: {} paths'.format(len(self.item_paths)))
+        # print('found: {}'.format(self.item_paths[0].findtext(_DATE_PATH)))
+        # print('found: {}'.format(self.item_paths[0].findtext(_TITLE_PATH)))
+        # print('found: {}'.format(self.item_paths[0].xpath(_URL_PATH)[0]))
 
     def scrape_item(self, path, keywords):
         """
@@ -31,12 +40,19 @@ class HtmlScraper(object):
         :param path: item xpath
         :param keywords: search keywords
         """
+        # _date = path.findtext(_DATE_PATH)
+        # # _title = path.findtext(_TITLE_PATH).encode('ascii', 'ignore')
+        # _title = path.findtext(_TITLE_PATH)
+        # # _url = path.xpath(_URL_PATH)[0]
+        # _url = path.xpath(_URL_PATH)
+        # _details = path.findtext(_DETAILS_PATH)
+        # _details = _details.encode('ascii', 'ignore') if _details else ''
+        # _title_details = '{} {}'.format(_title, _details)
+
         _date = path.findtext(_DATE_PATH)
         _title = path.findtext(_TITLE_PATH).encode('ascii', 'ignore')
         _url = path.xpath(_URL_PATH)[0]
-        _details = path.findtext(_DETAILS_PATH)
-        _details = _details.encode('ascii', 'ignore') if _details else ''
-        _title_details = '{} {}'.format(_title, _details)
+        _title_details = '{}'.format(_title)
 
         for keyword in keywords:
             if keyword.upper() in _title_details.upper():
@@ -54,7 +70,7 @@ def _us(text):
         elif active and line.startswith('<h4>'):
             us += '\n</div>\n<div>\n' + line + '\n'
         elif active and line.startswith('<h1>'):
-            break            
+            break
         elif active:
             us += line+'\n'
     return '{}\n</div>\n'.format(us)
@@ -64,8 +80,8 @@ class CitiesScraper(object):
     def __init__(self, text):
         """
         Scraper to find craigslist cities
-        :param text: html 
-        """        
+        :param text: html
+        """
         self.tree = html.fromstring(_us(text))
         self.item_paths = self.tree.xpath(_STATE_PATH)
         print('found: {}'.format(len(self.item_paths)))
@@ -76,18 +92,40 @@ class CitiesScraper(object):
         :returns: List of cities for the given state path.
         """
         cities = []
- 
+
         for li in path.xpath('li'):
             # print '>>>', li.findtext('a'), li.xpath('a/@href')[0]
             cities.append(City(li.findtext('a'), li.xpath('a/@href')[0]))
         return State(path.findtext('..h4'), cities)
 
 
+class RegionsScraper(object):
+    def __init__(self, text):
+        """
+        Scraper to find craigslist regions
+        :param text: html
+        """
+        self.tree = html.fromstring(text)
+        self.regions = self.tree.xpath(_REGION_PATH)
+        print('found: {}'.format(len(self.regions)))
+        self.regions = [self.region(x[1:]) for x in self.regions]
+        # print('found: {}'.format(self.regions))
+        # for path in self.regions:
+            # region = path.findtext('a')
+            # self.regions.append(path.text)
+
+    def region(self, x):
+        return {
+            'name': x,
+            'link': '/{}/cities'.format(x)
+        }
+
+
 class CategoriesScraper(object):
     def __init__(self, text):
         """
         Scrapes a craigslist city to find categories
-        :param text: html         
+        :param text: html
         """
         self.tree = html.fromstring(text)
         self.item_paths = self.tree.xpath(_CATEGORY_PATH)

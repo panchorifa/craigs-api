@@ -1,9 +1,9 @@
 """
 Functionality to find craigslist items by city and category
 """
-from scraper import HtmlScraper, CitiesScraper
+from scraper import HtmlScraper, RegionsScraper, CitiesScraper
 from models import CityItems, Region
-from settings import CITIES_URL, CATEGORIES as _categories
+from settings import REGIONS_URL, CITIES_URL, CATEGORIES as _categories
 import time
 
 _cache = {}
@@ -12,7 +12,6 @@ _cache = {}
 class XlistService(object):
     def __init__(self, request_api):
         self.xrequests = request_api
-        self.xcategories = None
 
     def categories(self):
         ts = time.time()
@@ -22,7 +21,17 @@ class XlistService(object):
         print ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", te
         return _cache['categories']
 
-    def cities(self, region):
+    def regions(self):
+        if 'regions' not in _cache:
+            _xregions = []
+            text = self.xrequests.get(REGIONS_URL)
+            if text:
+                scraper = RegionsScraper(text)
+                _xregions = scraper.regions
+            _cache['regions'] = _xregions
+        return _cache['regions']
+
+    def region(self, region):
         """
         Provide craigslist cities for the given region
         :param region: region
@@ -44,6 +53,12 @@ class XlistService(object):
         _cache[region] = r
         return r
 
+    def city_list(self, region):
+        """
+        Provide list of craigslist cities: {}.craigslist.org
+        """
+        return [ c for c in self.region(region).city_names ]
+
     def find_by_city(self, city, cat, keywords):
         """
         Find items by city
@@ -54,7 +69,7 @@ class XlistService(object):
         print('--------{}:{}------'.format(city, cat))
         city_items = CityItems(city, cat, keywords)
         text = self.xrequests.get(city_items.url)
-        if text:            
+        if text:
             scraper = HtmlScraper(text)
             for path in scraper.item_paths:
                 item = scraper.scrape_item(path, keywords)
@@ -75,6 +90,7 @@ class XlistService(object):
         :returns: List of CityItems instances
         """
         results = []
+        cities = cities if cities else self.city_list('US')
         for city in cities:
             for cat in categories:
                 city_items = self.find_by_city(city, cat, keywords)

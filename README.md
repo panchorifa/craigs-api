@@ -23,8 +23,21 @@ nosetests -c .noserc_local
 Then check `test_results/coverage/index.html` for the HTML report.
 
 
+### Running api
+
+```
+python app.py
+```
+
+"""
+curl http://localhost:8000/regions
+curl http://localhost:8000/categories
+curl http://localhost:8000/us/cities
+"""
+
+
 ### Capture test data
 
-```	
+```
 curl http://es.wikipedia.org/wiki/Anexo:Municipios_de_Aguascalientes > tests/samples/aguascalientes.html
 ```

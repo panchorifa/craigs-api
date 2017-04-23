@@ -8,10 +8,12 @@ USERS = {
 }
 
 
+REGIONS_URL = 'http://www.craigslist.org/about/sites'
+
 CITIES_URL = 'http://www.craigslist.org/about/sites#{}'
 
 
-CITY_URL = 'http://{}.craigslist.org/{}'
+CITY_URL = 'http://{}.craigslist.org/search/{}'
 
 
 CACHE_DIRECTORY = './cache'
