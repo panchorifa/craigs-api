@@ -23,7 +23,7 @@ nosetests -c .noserc_local
 Then check `test_results/coverage/index.html` for the HTML report.
 
 
-### Running api
+### Running flask api
 
 ```
 python app.py
