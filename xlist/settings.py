@@ -13,7 +13,7 @@ REGIONS_URL = 'http://www.craigslist.org/about/sites'
 CITIES_URL = 'http://www.craigslist.org/about/sites#{}'
 
 
-CITY_URL = 'http://{}.craigslist.org/search/{}'
+SEARCH_URL = 'http://{}.craigslist.org/search/{}?query={}'
 
 
 CACHE_DIRECTORY = './cache'

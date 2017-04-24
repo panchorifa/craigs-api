@@ -36,8 +36,8 @@ curl http://localhost:8000/us/cities
 """
 
 
-### Capture test data
+### Running command line interface
 
 ```
-curl http://es.wikipedia.org/wiki/Anexo:Municipios_de_Aguascalientes > tests/samples/aguascalientes.html
+python xlist.py find -X "cta" -K "f100"
 ```

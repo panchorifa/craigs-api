@@ -1,7 +1,7 @@
 """
 xlist models
 """
-from settings import CITY_URL
+from settings import SEARCH_URL
 
 
 class City(object):
@@ -39,7 +39,7 @@ class CityItems(object):
         self.city = city
         self.cat = cat
         self.keywords = keywords
-        self.url = CITY_URL.format(city, cat)
+        self.url = SEARCH_URL.format(city, cat, '+'.join(keywords))
         self._items = []
 
     def add_item(self, item):
@@ -53,7 +53,7 @@ class CityItems(object):
     def _build_item_url(self, value):
         if value.startswith('http'):
             return value
-        prefix = self.url[0: -(len(self.cat)+1)]
+        prefix = self.url[0:(self.url.find('.craigslist.org')+15)]
         return '{}{}'.format(prefix, value)
 
     def __str__(self):
@@ -65,14 +65,15 @@ class CityItems(object):
 
 
 class Item(object):
-    def __init__(self, date, title, url, keyword):
+    def __init__(self, date, title, url, image, keywords):
         self.date = date
         self.title = title
         self.url = url
-        self.keyword = keyword
+        self.keywords = keywords
+        self.image = 'https://images.craigslist.org/{}'.format(image) if image else ''
 
     def __str__(self):
-        return '[{}] {}: {}'.format(self.date, self.keyword, self.title)
+        return '[{}] {}: {}'.format(self.date, self.keywords, self.title)
 
 
 class Category(object):

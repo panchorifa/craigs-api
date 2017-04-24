@@ -1,24 +1,18 @@
 import requests
 from lxml import html
-from settings import CITY_URL
 from models import Item, City, State, Category
 
 
 _REGION_PATH = '//div[@class="jump_to_continents"]/a/@href'
 _STATE_PATH = '//parent::ul'
-# _ITEM_PATH = '//p[@class="row"]'
-_ITEM_PATH = '//p[@class="result-info"]'
+_ITEM_PATH = '//li[@class="result-row"]'
 _CATEGORY_PATH = '//div[@class="col"]'
 _CATEGORY_NAME_PATH = 'h4/a'
 _CATEGORY_URL_PATH = 'h4/a/@href'
-_DATE_PATH = 'time[@datetime]'
-_TITLE_PATH = 'a/[@class="result-title hdrlnk"]'
-_URL_PATH = 'a[@class="result-title hdrlnk"]/@href'
-# _DETAILS_PATH = 'span[@class="txt"]/span[@class="l2"]/span[@class="pnr"]/small'
-# _DATE_PATH = 'span[@class="txt"]/span[@class="pl"]/time'
-# _TITLE_PATH = 'span[@class="txt"]/span[@class="pl"]/a'
-# _URL_PATH = 'span[@class="txt"]/span[@class="pl"]/a/@href'
-# _DETAILS_PATH = 'span[@class="txt"]/span[@class="l2"]/span[@class="pnr"]/small'
+_DATE_PATH = 'p[@class="result-info"]/time[@datetime]'
+_TITLE_PATH = 'p[@class="result-info"]/a/[@class="result-title hdrlnk"]'
+_URL_PATH = 'p[@class="result-info"]/a[@class="result-title hdrlnk"]/@href'
+_IMAGE_PATH = 'a[@class="result-image gallery"]/@data-ids'
 
 
 class HtmlScraper(object):
@@ -29,10 +23,11 @@ class HtmlScraper(object):
         """
         self.tree = html.fromstring(text)
         self.item_paths = self.tree.xpath(_ITEM_PATH)
-        # print('found: {} paths'.format(len(self.item_paths)))
-        # print('found: {}'.format(self.item_paths[0].findtext(_DATE_PATH)))
-        # print('found: {}'.format(self.item_paths[0].findtext(_TITLE_PATH)))
-        # print('found: {}'.format(self.item_paths[0].xpath(_URL_PATH)[0]))
+        print('found: {} paths'.format(len(self.item_paths)))
+        print('found: {}'.format(self.item_paths[0].findtext(_DATE_PATH)))
+        print('found: {}'.format(self.item_paths[0].findtext(_TITLE_PATH)))
+        print('found: {}'.format(self.item_paths[0].xpath(_URL_PATH)[0]))
+        print('found: {}'.format(self.item_paths[0].xpath(_IMAGE_PATH)))
 
     def scrape_item(self, path, keywords):
         """
@@ -40,24 +35,12 @@ class HtmlScraper(object):
         :param path: item xpath
         :param keywords: search keywords
         """
-        # _date = path.findtext(_DATE_PATH)
-        # # _title = path.findtext(_TITLE_PATH).encode('ascii', 'ignore')
-        # _title = path.findtext(_TITLE_PATH)
-        # # _url = path.xpath(_URL_PATH)[0]
-        # _url = path.xpath(_URL_PATH)
-        # _details = path.findtext(_DETAILS_PATH)
-        # _details = _details.encode('ascii', 'ignore') if _details else ''
-        # _title_details = '{} {}'.format(_title, _details)
-
         _date = path.findtext(_DATE_PATH)
         _title = path.findtext(_TITLE_PATH).encode('ascii', 'ignore')
         _url = path.xpath(_URL_PATH)[0]
-        _title_details = '{}'.format(_title)
-
-        for keyword in keywords:
-            if keyword.upper() in _title_details.upper():
-                return Item(_date, _title_details, _url, keyword=keyword)
-        return None
+        _image = path.xpath(_IMAGE_PATH)
+        _image = _image[0].split(',')[0] if _image else None
+        return Item(_date, _title, _url, _image, keywords=keywords)
 
 
 def _us(text):
@@ -109,10 +92,6 @@ class RegionsScraper(object):
         self.regions = self.tree.xpath(_REGION_PATH)
         print('found: {}'.format(len(self.regions)))
         self.regions = [self.region(x[1:]) for x in self.regions]
-        # print('found: {}'.format(self.regions))
-        # for path in self.regions:
-            # region = path.findtext('a')
-            # self.regions.append(path.text)
 
     def region(self, x):
         return {
