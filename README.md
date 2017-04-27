@@ -1,6 +1,6 @@
-xmunicipio-services
+craigs-api
 ===================
-backend services for xmunicipio
+search craigslist nation wide
 
 ## setup
 
